@@ -165,10 +165,25 @@
         let attendanceList = JSON.parse(localStorage.getItem('attendanceList')) || [];
         let history = JSON.parse(localStorage.getItem('history')) || {};
 
+        // Hàm lấy ngày hôm nay
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`; // Định dạng YYYY-MM-DD
+        }
+
         // Hàm điểm danh
         function markAttendance() {
             const name = document.getElementById('name').value.trim();
             const date = document.getElementById('date').value;
+
+            // Kiểm tra xem ngày người dùng nhập có phải là hôm nay không
+            if (date !== getTodayDate()) {
+                alert("Chỉ có thể điểm danh trong ngày hôm nay!");
+                return;
+            }
 
             // Lấy giờ hiện tại khi điểm danh
             const currentDate = new Date();
@@ -259,9 +274,8 @@
             historyDetails.style.display = 'block';
             historyTableBody.innerHTML = ''; // Xóa dữ liệu cũ
 
-            // Lấy lịch sử điểm danh cho người đã chọn
-            const userHistory = history[selectedName];
-            userHistory.forEach(entry => {
+            // Lọc và hiển thị lịch sử cho người đã chọn
+            history[selectedName].forEach((entry) => {
                 const row = document.createElement('tr');
                 const dateCell = document.createElement('td');
                 const timeCell = document.createElement('td');
