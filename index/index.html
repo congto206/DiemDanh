@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Điểm Danh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .table-container {
+            margin-top: 30px;
+        }
+
+        .history-container {
+            margin-top: 40px;
+        }
+
+        .history-details {
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Trang Điểm Danh</h1>
+        
+        <!-- Form Điểm Danh -->
+        <div class="form-group">
+            <label for="name">Họ và Tên:</label>
+            <input type="text" id="name" placeholder="Nhập họ và tên" required>
+        </div>
+
+        <div class="form-group">
+            <label for="date">Ngày Điểm Danh:</label>
+            <input type="date" id="date" required>
+        </div>
+
+        <button onclick="markAttendance()">Điểm Danh</button>
+
+        <!-- Danh sách điểm danh -->
+        <div class="table-container">
+            <h2>Danh Sách Điểm Danh</h2>
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Họ và Tên</th>
+                        <th>Ngày Điểm Danh</th>
+                        <th>Giờ Điểm Danh</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu điểm danh sẽ hiển thị ở đây -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Lịch sử điểm danh -->
+        <div class="history-container">
+            <h2>Lịch Sử Điểm Danh</h2>
+
+            <!-- Chọn tên để xem lịch sử -->
+            <div class="form-group">
+                <label for="selectName">Chọn Người Điểm Danh:</label>
+                <select id="selectName" onchange="showHistory()">
+                    <option value="">Chọn tên...</option>
+                    <!-- Danh sách người sẽ được thêm động -->
+                </select>
+            </div>
+
+            <!-- Hiển thị chi tiết lịch sử -->
+            <div class="history-details" id="historyDetails">
+                <h3>Lịch Sử Điểm Danh</h3>
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Ngày Điểm Danh</th>
+                            <th>Giờ Điểm Danh</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Lịch sử điểm danh cho người đã chọn sẽ hiển thị ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lấy dữ liệu từ localStorage (nếu có)
+        let attendanceList = JSON.parse(localStorage.getItem('attendanceList')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || {};
+
+        // Hàm điểm danh
+        function markAttendance() {
+            const name = document.getElementById('name').value.trim();
+            const date = document.getElementById('date').value;
+
+            // Lấy giờ hiện tại khi điểm danh
+            const currentDate = new Date();
+            const hours = String(currentDate.getHours()).padStart(2, '0');
+            const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+            const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+            const time = `${hours}:${minutes}:${seconds}`; // Giờ Điểm Danh
+
+            // Kiểm tra xem tên và ngày tháng có hợp lệ không
+            if (!name || !date) {
+                alert("Vui lòng nhập đủ thông tin!");
+                return;
+            }
+
+            // Thêm dữ liệu vào danh sách điểm danh
+            attendanceList.push({ name, date, time });
+
+            // Lưu lịch sử điểm danh cho từng người
+            if (!history[name]) {
+                history[name] = [];
+            }
+            history[name].push({ date, time });
+
+            // Lưu vào localStorage
+            localStorage.setItem('attendanceList', JSON.stringify(attendanceList));
+            localStorage.setItem('history', JSON.stringify(history));
+
+            // Cập nhật bảng điểm danh và bảng lịch sử
+            updateAttendanceTable();
+            updateHistoryOptions();
+
+            // Reset form
+            document.getElementById('name').value = '';
+            document.getElementById('date').value = '';
+        }
+
+        // Hàm cập nhật bảng điểm danh
+        function updateAttendanceTable() {
+            const tableBody = document.querySelector('#attendanceTable tbody');
+            tableBody.innerHTML = ''; // Xóa dữ liệu cũ
+
+            // Thêm dữ liệu mới vào bảng
+            attendanceList.forEach((entry) => {
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                const dateCell = document.createElement('td');
+                const timeCell = document.createElement('td');
+
+                nameCell.textContent = entry.name;
+                dateCell.textContent = entry.date;
+                timeCell.textContent = entry.time;
+
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(timeCell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Hàm cập nhật danh sách tên trong phần lựa chọn
+        function updateHistoryOptions() {
+            const selectName = document.getElementById('selectName');
+            // Xóa danh sách tên cũ
+            selectName.innerHTML = '<option value="">Chọn tên...</option>';
+
+            // Thêm các tên vào select
+            for (const name in history) {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                selectName.appendChild(option);
+            }
+        }
+
+        // Hàm hiển thị lịch sử điểm danh cho người đã chọn
+        function showHistory() {
+            const selectedName = document.getElementById('selectName').value;
+            const historyTableBody = document.querySelector('#historyTable tbody');
+            const historyDetails = document.getElementById('historyDetails');
+            
+            // Nếu không có tên chọn, ẩn lịch sử
+            if (!selectedName) {
+                historyDetails.style.display = 'none';
+                return;
+            }
+
+            // Hiển thị lịch sử điểm danh
+            historyDetails.style.display = 'block';
+            historyTableBody.innerHTML = ''; // Xóa dữ liệu cũ
+
+            // Lấy lịch sử điểm danh cho người đã chọn
+            const userHistory = history[selectedName];
+            userHistory.forEach(entry => {
+                const row = document.createElement('tr');
+                const dateCell = document.createElement('td');
+                const timeCell = document.createElement('td');
+
+                dateCell.textContent = entry.date;
+                timeCell.textContent = entry.time;
+
+                row.appendChild(dateCell);
+                row.appendChild(timeCell);
+                historyTableBody.appendChild(row);
+            });
+        }
+
+        // Cập nhật bảng điểm danh và lịch sử khi trang được tải
+        window.onload = function() {
+            updateAttendanceTable();
+            updateHistoryOptions();
+        }
+    </script>
+
+</body>
+</html>
